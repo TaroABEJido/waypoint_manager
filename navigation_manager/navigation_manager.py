@@ -63,10 +63,10 @@ class WaypointSender(Node):
                     "xy_goal_tol": float(row[8]),
                     "des_lin_vel": float(row[9]),
                     "stop_flag": int(row[10]),
-                    "skip_flag": int(row[11]),
-                    "gps_pose_enable": int(row[12]),
-                    "map_pose_enable": int(row[13]),
-                    "init_pose_pub": int(row[14])
+                    "skip_flag": int(row[11]) #,
+                    # "gps_pose_enable": int(row[12]),
+                    # "map_pose_enable": int(row[13]),
+                    # "init_pose_pub": int(row[14])
                 }
 
                 waypoints_data.append(waypoint_data)
@@ -88,20 +88,20 @@ class WaypointSender(Node):
         self.id_publisher_.publish(int_msg)
         # navigation2にposeを送信
         self.pose_publisher_.publish(waypoint_data["pose"])
-        # gps_pose_providerにフラグを送信
-        gps_pose_enable_msg = Int32(data=waypoint_data["gps_pose_enable"])
-        self.gps_pose_enable_publisher_.publish(gps_pose_enable_msg)
-        # map_pose_providerにフラグを送信
-        map_pose_enable_msg = Int32(data=waypoint_data["map_pose_enable"])
-        self.map_pose_enable_publisher_.publish(map_pose_enable_msg)
-        # ここでinit_pose_pubをチェックして、/initialposeにposeを送信
-        if waypoint_data["init_pose_pub"] == 1 and self.odom_pose is not None:
-            initial_pose_msg = PoseWithCovarianceStamped()
-            initial_pose_msg.header.stamp = self.get_clock().now().to_msg()
-            initial_pose_msg.header.frame_id = 'map'  # 'map'フレームは適宜調整してください
-            initial_pose_msg.pose.pose = self.odom_pose.pose.pose  # OdometryのPoseWithCovarianceからPoseにコピー
-            initial_pose_msg.pose.covariance = self.odom_pose.pose.covariance  # 共分散情報もコピー
-            self.initial_pose_publisher.publish(initial_pose_msg)
+        # # gps_pose_providerにフラグを送信
+        # gps_pose_enable_msg = Int32(data=waypoint_data["gps_pose_enable"])
+        # self.gps_pose_enable_publisher_.publish(gps_pose_enable_msg)
+        # # map_pose_providerにフラグを送信
+        # map_pose_enable_msg = Int32(data=waypoint_data["map_pose_enable"])
+        # self.map_pose_enable_publisher_.publish(map_pose_enable_msg)
+        # # ここでinit_pose_pubをチェックして、/initialposeにposeを送信
+        # if waypoint_data["init_pose_pub"] == 1 and self.odom_pose is not None:
+        #     initial_pose_msg = PoseWithCovarianceStamped()
+        #     initial_pose_msg.header.stamp = self.get_clock().now().to_msg()
+        #     initial_pose_msg.header.frame_id = 'map'  # 'map'フレームは適宜調整してください
+        #     initial_pose_msg.pose.pose = self.odom_pose.pose.pose  # OdometryのPoseWithCovarianceからPoseにコピー
+        #     initial_pose_msg.pose.covariance = self.odom_pose.pose.covariance  # 共分散情報もコピー
+        #     self.initial_pose_publisher.publish(initial_pose_msg)
 
     def feedback_callback(self, feedback_msg):
         current_time = self.get_clock().now()
