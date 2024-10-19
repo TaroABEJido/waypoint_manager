@@ -17,7 +17,7 @@ class PoseRecorder(Node):
 
         # Span settings
         self.wp_dist_span = 3.0 # [m]
-        self.wp_angle_span = np.pi/180.0 * 10 #[deg] 
+        self.wp_angle_span = np.pi/180.0 * 30 #[deg] 
 
         self.poses = []
         self.current_pose = None
