@@ -3,6 +3,8 @@ from rclpy.action import ActionClient
 from rclpy.node import Node
 from nav2_msgs.action import NavigateToPose
 from geometry_msgs.msg import PoseStamped
+from geometry_msgs.msg import PoseArray
+
 from action_msgs.msg import GoalStatus
 import csv
 import time
@@ -21,25 +23,26 @@ class WaypointSender(Node):
         self.declare_parameter('action_server_name', 'navigate_to_pose')
         waypoints_filename = self.get_parameter('filename').value
         action_server_name = self.get_parameter('action_server_name').value
-#        print(waypoints_filename)
+        self.get_logger().info(waypoints_filename)
 
-        self.id_publisher_ = self.create_publisher(Int32, '/navigation_manager/next_waypointID', 10)
-        self.pose_publisher_ = self.create_publisher(PoseStamped, 'navigation_manager/waypoint_pose', 10)
+        self.id_publisher_ = self.create_publisher(Int32, '/waypoint_manager/next_waypointID', 10)
+        self.pose_publisher_ = self.create_publisher(PoseStamped, 'waypoint_manager/waypoint_pose', 10)
+        self.pose_array_publisher_ = self.create_publisher(PoseArray, 'waypoint_manager/waypoints', 10)
 
         self._action_client = ActionClient(self, NavigateToPose, action_server_name)
         self.waypoints_data = self.load_waypoints_from_csv(waypoints_filename)
         self.current_waypoint_index = 0
         self._last_feedback_time = self.get_clock().now()
         
-        # /odomからEKFのposeを取得
-        self.odom_subscriber = self.create_subscription(Odometry, '/odom', self.odom_callback, 10)
+        # 現在のpose情報を取得
+        self.odom_subscriber = self.create_subscription(PoseStamped, '/current_pose', self.odom_callback, 10)
         # odomのポーズを保持する変数を初期化
         self.odom_pose = None
         # AMCLに/initialposeをpublish
         self.initial_pose_publisher = self.create_publisher(PoseWithCovarianceStamped, '/initialpose', 10)
         # gpsとmapのposeを提供してくれるノードに対して指示
-        self.gps_pose_enable_publisher_ = self.create_publisher(Int32, '/navigation_manager/gps_pose_enable', 10)
-        self.map_pose_enable_publisher_ = self.create_publisher(Int32, '/navigation_manager/map_pose_enable', 10)
+        self.gps_pose_enable_publisher_ = self.create_publisher(Int32, '/waypoint_manager/gps_pose_enable', 10)
+        self.map_pose_enable_publisher_ = self.create_publisher(Int32, '/waypoint_manager/map_pose_enable', 10)
         
         
     def load_waypoints_from_csv(self, filename):
@@ -88,13 +91,15 @@ class WaypointSender(Node):
         self.id_publisher_.publish(int_msg)
         # navigation2にposeを送信
         self.pose_publisher_.publish(waypoint_data["pose"])
+
         # # gps_pose_providerにフラグを送信
         # gps_pose_enable_msg = Int32(data=waypoint_data["gps_pose_enable"])
         # self.gps_pose_enable_publisher_.publish(gps_pose_enable_msg)
         # # map_pose_providerにフラグを送信
         # map_pose_enable_msg = Int32(data=waypoint_data["map_pose_enable"])
         # self.map_pose_enable_publisher_.publish(map_pose_enable_msg)
-        # # ここでinit_pose_pubをチェックして、/initialposeにposeを送信
+
+        # ここでinit_pose_pubをチェックして、/initialposeにposeを送信
         # if waypoint_data["init_pose_pub"] == 1 and self.odom_pose is not None:
         #     initial_pose_msg = PoseWithCovarianceStamped()
         #     initial_pose_msg.header.stamp = self.get_clock().now().to_msg()
@@ -149,10 +154,25 @@ class WaypointSender(Node):
             self.get_logger().info('Arrived at the last waypoint. Navigation complete.')
 
     def odom_callback(self, msg):
-        self.odom_pose = msg
+        odom = Odometry()
+        odom.header = msg.header
+        odom.pose.pose = msg.pose
+        self.odom_pose = odom
         #self.odom_pose = msg.pose
         
     def run(self):
+        
+        # Publish all waypoints data as PoseArray
+        wp_array_msg = PoseArray()
+        wp_array_msg.header.stamp = self.get_clock().now().to_msg()
+        wp_array_msg.header.frame_id = 'map'
+        
+        for waypoint in self.waypoints_data:
+            wp_array_msg.poses.append(waypoint['pose'].pose)
+            
+        self.pose_array_publisher_.publish (wp_array_msg)
+
+        # Publish the first waypoint data
         if self.waypoints_data:
             self.send_goal(self.waypoints_data[self.current_waypoint_index])
 

@@ -2,7 +2,7 @@ from setuptools import setup
 import os
 from glob import glob
 
-package_name = 'navigation_manager'
+package_name = 'waypoint_manager'
 
 setup(
     name=package_name,
@@ -17,19 +17,19 @@ setup(
     ],
     install_requires=['setuptools'],
     zip_safe=True,
-    maintainer='yuta',
-    maintainer_email='yutanakamura01@gmail.com',
+    maintainer='TaroABE',
+    maintainer_email='abet.jido.kenki@gmail.com',
     description='TODO: Package description',
     license='TODO: License declaration',
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'navigation_manager = navigation_manager.navigation_manager:main',
-            'waypoint_saver = navigation_manager.waypoint_saver:main',
-            'waypoint_saver_for_map = navigation_manager.waypoint_saver_for_map:main',
-            'param_test = navigation_manager.param_test:main',
-            'gps_on = navigation_manager.gps_on_amcl_off:main',
-            'amcl_on = navigation_manager.amcl_on_gps_off:main'
+            'waypoint_manager = waypoint_manager.waypoint_manager:main',
+            'waypoint_saver = waypoint_manager.waypoint_saver:main',
+            'waypoint_saver_for_map = waypoint_manager.waypoint_saver_for_map:main',
+            'param_test = waypoint_manager.param_test:main',
+            'gps_on = waypoint_manager.gps_on_amcl_off:main',
+            'amcl_on = waypoint_manager.amcl_on_gps_off:main'
         ],
     },
 )

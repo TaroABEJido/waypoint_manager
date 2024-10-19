@@ -1,4 +1,4 @@
-# navigation_manager
+# waypoint_manager
 navigation2に対して、waypointを投げたり、特定の位置で停止したり、速度を指示したりします。
 
 ## ビルド

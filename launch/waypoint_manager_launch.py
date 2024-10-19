@@ -9,7 +9,7 @@ waypoint_file = 'waypoints.csv'
 action_server_name = 'navigate_to_pose'
 
 # waypointファイルを読み込むための文字列処理
-simple_commander_share_dir = get_package_share_directory('navigation_manager')
+simple_commander_share_dir = get_package_share_directory('waypoint_manager')
 print(simple_commander_share_dir)
 filename = simple_commander_share_dir + '/' + waypoint_file
 print(filename)
@@ -17,10 +17,11 @@ print(filename)
 def generate_launch_description():
     return LaunchDescription([
         Node(
-            package='navigation_manager',
-            executable='navigation_manager',
+            package='waypoint_manager',
+            executable='waypoint_manager',
             name='waypoint_sender',
             parameters=[{'filename': filename, 'action_server_name': action_server_name}],
+            output='screen',
             #parameters=[{'filename': waypoint_file, 'action_server_name': action_server_name}],
         ),
     ])
