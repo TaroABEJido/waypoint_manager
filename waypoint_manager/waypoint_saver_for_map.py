@@ -33,7 +33,7 @@ class PoseRecorder(Node):
 
         # Subscribe to /current_pose instead of /odom
         # self.create_subscription(PoseWithCovarianceStamped, '/initialpose', self.pose_callback, 10)
-        self.create_subscription(PoseStamped, '/current_pose', self.pose_callback, 10)
+        self.create_subscription(PoseStamped, '/pcl_pose', self.pose_callback, 10)
         # self.wp_publisher = self.create_publisher(PoseStamped, '/waypoint_manager/waypoint', 10) 
         print('Press "q" to quit and save to csv.')
 
@@ -93,10 +93,10 @@ class PoseRecorder(Node):
 
     def on_key_press(self, key):
         try:
-            if key.char == 'q':
+            if key.char == '@':
                 self.save_poses_to_csv()
-                self.destroy_node()
-                rclpy.shutdown()
+                # self.destroy_node()
+                # rclpy.shutdown()
         except AttributeError:
             pass
 
